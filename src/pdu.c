@@ -93,7 +93,7 @@ void pdu_error(char **err_str, char *title, int position, int length, char *form
 
 int isXdigit(char ch)
 {
-  if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F'))
+  if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f'))
     return 1;
   return 0;
 }
@@ -481,15 +481,22 @@ int octet2bin(char* octet) /* converts an octet to a 8-Bit value */
 {
   int result=0;
 
-  if (octet[0]>57)
-    result+=octet[0]-55;
-  else
-    result+=octet[0]-48;
+  if (octet[0] >= '0' && octet[0] <= '9')
+    result += octet[0] - '0';
+  else if (octet[0] >= 'A' && octet[0] <= 'F')
+    result += octet[0] - 'A' + 10;
+  else if (octet[0] >= 'a' && octet[0] <= 'f')
+    result += octet[0] - 'a' + 10;
+ 
   result=result<<4;
-  if (octet[1]>57)
-    result+=octet[1]-55;
-  else
-    result+=octet[1]-48;
+
+  if (octet[1] >= '0' && octet[1] <= '9')
+    result += octet[1] - '0';
+  else if (octet[1] >= 'A' && octet[1] <= 'F')
+    result += octet[1] - 'A' + 10;
+  else if (octet[1] >= 'a' && octet[1] <= 'f')
+    result += octet[1] - 'a' + 10;
+
   return result;
 }
 
@@ -997,7 +1004,7 @@ int explain_toa(char *dest, char *octet_char, int octet_int)
       case 1: p = "international"; break;
       case 2: p = "national"; break;
       case 3: p = "network specific"; break;
-      case 4: p = "subsciber"; break;
+      case 4: p = "subscriber"; break;
       case 5: p = "alphanumeric"; break;
       case 6: p = "abbreviated"; break;
       //case 7: p = "reserved"; break;
@@ -1159,14 +1166,14 @@ int split_type_0(char *full_pdu, char* Src_Pointer, int* alphabet, char* sendr, 
             i = Length +padding -1;
             if (padding)
             {
-              if (sendr[i] != 'F')
+              if ((sendr[i] != 'F') && (sendr[i] != 'f'))
                 add_warning(warning_headers, "Length of numeric sender address is odd, but not terminated with 'F'.");
               else
                 sendr[i] = 0;
             }
             else
             {
-              if (sendr[i] == 'F')
+              if ((sendr[i] != 'F') && (sendr[i] != 'f'))
               {
                 add_warning(warning_headers, "Length of numeric sender address is even, but still was terminated with 'F'.");
                 sendr[i] = 0;
